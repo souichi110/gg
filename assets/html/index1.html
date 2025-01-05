@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab Car</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="header"><h2>Grab Car</h2></div>
+    <div class="container">
+        <input type="text" id="pickupSearchBar" class="search-bar" placeholder="Pickup location...">
+        <input type="text" id="dropoffSearchBar" class="search-bar" placeholder="Drop-off location...">
+        <div id="resultsContainer" class="resultsContainer"></div>
+        <button id="confirmButton" class="button">Confirm</button>
+        <div id="grabCarDetails" class="grab-car-details" style="display:none;">
+            <ul id="grabCarList"></ul>
+            <div id="paymentMethodsDropdown" class="custom-dropdown">
+                <div class="default-list">
+                    <img src="https://dzmgxsm1og5yv.cloudfront.net/static/history/mastercard.png" alt="Mastercard" class="card-icon">
+                    <div class="selected">Select Payment Method</div>
+                </div>
+                <div class="payment-list"></div>
+            </div>
+            <button class="button-c">Book Grab Car</button>
+        </div>
+        <div id="allocationStatus" class="allocation-status" style="display:none;">
+            <div id="loadingIndicator" class="loading-indicator"></div>
+            <div id="errorIcon" class="error-icon" style="display:none;"><span class="cross">✖</span></div>
+            <div id="successIcon" class="success-icon" style="display:none;"><span class="check">✔</span></div>
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+    </div>
+    <script src="/js/script.js"></script>
+</body>
+</html>

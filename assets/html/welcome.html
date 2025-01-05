@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab Discount Portal</title>
+    <link rel="stylesheet" href="/css/front.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚖 Grab Discounts</h1>
+            <p>Exclusive offers for u.</p>
+        </div>
+
+        <div class="discount-details">
+            <h2>📜 Offer Details</h2>
+            <ul>
+                <li>💸 <strong>40% Discount:</strong> For bookings worth PHP 900 or less.</li>
+                <li>💎 <strong>50% Discount:</strong> For bookings worth PHP 1,000 or more.</li>
+            </ul>
+        </div>
+
+        <div class="input-container">
+            <label for="secretKey">🔑 Enter Secret Key:</label>
+            <input type="password" id="secretKey" placeholder="Enter your key">
+            <button id="unlockButton">Unlock Discount</button>
+        </div>
+
+        <footer>
+            <p>🛠 Your rides, your rules.</p>
+        </footer>
+    </div>
+
+    <script src="/js/front.js"></script>
+</body>
+</html>

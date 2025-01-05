@@ -1,0 +1,135 @@
+/* Global Styles */
+body {
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+    height: 100vh; margin: 0; color: #fff; background-color: #3e3c3c; font-family: monospace; overflow-x: hidden;
+}
+
+ul, li { list-style: none; padding: 0; margin: 0; }
+* { box-sizing: border-box; }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background-color: #333; border-radius: 5px; }
+::-webkit-scrollbar-track { background: #1e1e1e; }
+
+/* Container and Layout */
+.container, .button, .grab-car-details, .payment-list {
+    border-radius: 8px; background-color: #2e2e2e; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.container {
+    padding: 19px; width: 60%; max-width: 100%; height: 80%; display: flex;
+    flex-direction: column; align-items: center; overflow-y: auto; position: relative;
+}
+
+.header { width: 60%; text-align: center; position: sticky; }
+.grab-car-details { width: 100%; display: flex; height: 100%; flex-direction: column; align-items: center; }
+.grab-car-item { margin-bottom: 10px; border-bottom: 1px solid #333; }
+.grab-car-item:hover { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); }
+.grab-car-item-inner { display: flex; align-items: center; padding: 10px 0; }
+.grab-car-item.selected { opacity: 0.7; }
+.service-icon, .card-icon, .default-list img, .grab-car-info img { height: 30px; margin-right: 10px; }
+.grab-car-content { flex: 1; display: flex; flex-direction: column; }
+.grab-car-info { margin-left: auto; }
+#grabCarList { width: 100%; height: 70%; overflow-y: auto; }
+
+/* Buttons and Interactions */
+.search-bar, .button, .button-c, .default-list {
+    text-align: center; padding: 12px; margin-bottom: 20px; border: 1px solid #333;
+    font-size: 16px; cursor: pointer; background-color: #333; color: white; width: 100%;
+}
+
+.button { margin-top: auto; }
+.button-c, .custom-dropdown { width: 100%; max-width: 100%; }
+.custom-dropdown { position: relative; }
+.default-list { display: flex; align-items: center; padding: 10px; background-color: #333; border: 1px solid #444; }
+
+/* List Items */
+.location-result, .c-item {
+    align-items: center; text-align: center; padding: 10px; margin-bottom: 10px;
+    background-color: #2e2e2e; cursor: pointer; transition: background-color 0.3s;
+}
+
+.location-result:hover, .c-item:hover, .button:hover, .button-c:hover {
+    background-color: #3a3a3a; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.c-item { border-bottom: 1px solid #444; color: white; }
+.c-item:hover { background-color: #444; }
+
+/* Text Styles */
+.location-name, .grab-car-title, .text { font-size: 16px; font-weight: bold; }
+.location-address, .etd, .grab-car-price, .grab-car-info { font-size: 12px; }
+.selected { margin-left: 10px; font-size: 16px; }
+
+/* Payment List */
+.payment-list {
+    display: none; position: absolute; width: 100%; background-color: #333; border: 1px solid #444;
+    border-radius: 8px; top: calc(100% + 5px); left: 0; max-height: 200px; overflow-y: auto;
+}
+
+.payment-list.show { display: block; }
+.resultsContainer { height: 100%; overflow-y: auto; }
+
+/* Allocation Status */
+.allocation-status {
+    position: fixed; top: 20px; right: 20px; display: flex; flex-direction: column;
+    align-items: center; text-align: center; background-color: #2e2e2e; padding: 20px;
+    border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); z-index: 1000;
+}
+
+.loading-indicator {
+    width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #fff;
+    border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.status-message { color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+.share-link { color: #1e90ff; text-decoration: none; font-size: 16px; }
+.share-link:hover { text-decoration: underline; }
+.error-icon, .success-icon {
+    width: 50px; height: 50px; background-size: contain; background-repeat: no-repeat;
+    background-position: center; margin: 20px auto;
+} 
+.success-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #28a745;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+.error-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #dc3545; /* Red background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.success-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #28a745;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+.success-icon .check {
+    font-size: 24px;
+    color: white; /* White checkmark */
+}
+.error-icon .cross {
+    font-size: 24px;
+    color: white; /* White cross */
+}

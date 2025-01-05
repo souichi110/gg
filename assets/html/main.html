@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Grab Car Account</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #181818;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .head {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f7f7f7;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .grab-account {
+            background-color: #242424;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            text-align: center;
+        }
+
+        .grab-account:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .statu {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            background-color: #e74c3c;
+            padding: 6px 10px;
+            border-radius: 3px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .grab-account.available .statu {
+            background-color: #27ae60;
+        }
+
+        .grab-account p {
+            margin: 0;
+            font-size: 16px;
+            color: #ccc;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="head">Grab Car Account List</div>
+    <div class="container">
+        <div class="grab-account available">
+            <div class="statu">Available</div>
+            <p>Grab Car Account 1</p>
+        </div>
+        <div class="grab-account ongoing">
+            <div class="statu">Ongoing</div>
+            <p>Grab Car Account 2</p>
+        </div>
+        <div class="grab-account available">
+            <div class="statu">Available</div>
+            <p>Grab Car Account 3</p>
+        </div>
+        <div class="grab-account ongoing">
+            <div class="statu">Ongoing</div>
+            <p>Grab Car Account 4</p>
+        </div>
+        <div class="grab-account available">
+            <div class="statu">Available</div>
+            <p>Grab Car Account 5</p>
+        </div>
+        <div class="grab-account ongoing">
+            <div class="statu">Ongoing</div>
+            <p>Grab Car Account 6</p>
+        </div>
+        <div class="grab-account available">
+            <div class="statu">Available</div>
+            <p>Grab Car Account 7</p>
+        </div>
+        <div class="grab-account ongoing">
+            <div class="statu">Ongoing</div>
+            <p>Grab Car Account 8</p>
+        </div>
+        <div class="grab-account available">
+            <div class="statu">Available</div>
+            <p>Grab Car Account 9</p>
+        </div>
+        <div class="grab-account ongoing">
+            <div class="statu">Ongoing</div>
+            <p>Grab Car Account 10</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function updateStatus() {
+                $('.grab-account').each(function() {
+                    const isOngoing = Math.random() > 0.5;
+                    const $status = $(this).find('.statu');
+
+                    if (isOngoing) {
+                        $(this).removeClass('available').addClass('ongoing');
+                        $status.text('Ongoing').css('background-color', '#e74c3c');
+                    } else {
+                        $(this).removeClass('ongoing').addClass('available');
+                        $status.text('Available').css('background-color', '#27ae60');
+                    }
+                });
+            }
+
+            // Update status every 5 seconds
+            setInterval(updateStatus, 5000);
+        });
+    </script>
+</body>
+</html>
