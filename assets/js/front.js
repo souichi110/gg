@@ -14,12 +14,13 @@
             alert('Please enter your secret key.');
             return;
         }
-
-        console.log('Submitted key:', secretKey);
-
-        // Emit user data with the secret key
         socket.emit('userData', secretKey);
-        await sleep(1000); // Pause for 5 seconds
-        window.location.href = '/book?key=' + secretKey
+        socket.on('keyValidation', (response) => {
+            if (response.valid) {
+                window.location.href = '/book?key=' + secretKey;
+            } else {
+                alert(response.message);
+            }
+        });
     });
 })(jQuery);

@@ -4,7 +4,7 @@ const socketIO = require('socket.io');
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const cors = require('cors');
-
+const axios = require('axios');
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
@@ -15,7 +15,8 @@ const KEYS = {
     'g_car_2700': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRGVrTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSVTVuWnpZMmRIWjJPRmMyTHpsRFVXNDNjSEpUYjIxMWQzZ3dkM2MzUW1ZM2NHZEVPV1p6YkZWa05sZFRWVXRVV0VaeGREUkxSa3cwYlVsRlptaE9jSE5yUmxGT0NrSnljR3BwY3pGaGFuTk9iVlY2TTBabVJFRkxRbWRuY1docmFrOVFVVkZFUVdkT1NrRkVRa2RCYVVWQmJsSXZhVk16TTNjM1prMUZaMHg2Y2xJeFZGVkZXRTlhZEROcFVVVnhhV3NLYVU0emEyNUphMFpOTUdkRFNWRkRTVWxCWkVwSGVFY3hObHBQY2pkSWFtZGxRWFJXUkdabVEzUmxVbWhoVmxCRVJtZEZiVnBFYlhKc1p6MDlDaTB0TFMwdFJVNUVJRU5GVWxSSlJrbERRVlJGTFMwdExTMD0iLCJlc2kiOiIyUzJtc01tZDdMNnV2dW43MXBlSVJzRmYxWWh6U1dxMG52T3Y3NmpxQlpoaTFMVFlJZz09IiwiZXhwIjo0ODg5NTc5MTEzLCJpYXQiOjE3MzU5NzkxMTAsImp0aSI6ImQ5YjUxZDRjLWI3ZWItNDIyNC1iZTE4LTUyYzk4Y2NlZjA5YSIsImxtZSI6IlBIT05FTlVNQkVSIiwibmFtZSI6IiIsInN1YiI6ImQ5Yjk5NTYwLTA1OTQtNGE5My04MmRkLWE2MzQ1NmM0NWM4NyJ9.IoV_b0KbN4pbSwrqgbqLbaUdO2MGzsfh8OXx6eCrXI1OusIsZYUKFPGbpyxqRi3BnbzIy-4pQ8eWSHXyMRoUjB59wzB0Hv0T32KvzoKIqM4xz5wvgc2LGXAXzNVXCWTH43MkEobVnRDrlzVDuZBSZORX3JKh3qs0RP1YqDpHmQ5s2nBOGAKNdWJ6oUWCroocPWuEkqkWRglEeGVphdWQenhP6y89MZCHdAL-kvf-t1nIOiQ1K5Jy5CP13K_9Yaqo3SdPVNW-qayKqhbP92mnkyWW-0JtMUpNCk5SiVTeh-6Ekeq8u1TxCQ-7s5e6DMiOPU65Baw5roEkxWwDuqY5m2zAcGvLKfSEYfKl1eTaCOXCMKgTdOOMEaD5rkEb4XGRuGFPBtqFHUeBLODicVy-5t5R1XJ2cbce5l1VHx0B8L-iXuOzQb1Kz_SzU7r3qWkf64Pt2wh9eUlyvht53smJUknsnhvjTrPO5-jbglUUF1yEpMgEHcyDoT805G1TUa6c5m1htYcZEXMSF4KrBZJV-HL9zdzYgTSdumHVz4PxmPSlD3et23p1-rpbZ0QLsJCbOrFo8Lj068VvByr9kEeJAL5FwD4wN9tzupUkFWhHCmOAV8VxCk5SrNKkB004o_0XG5_fYyyVt2ytnducDJ6ahsxFvYNb08o8cged87cFxv8',
     'g_car_2709': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRGFrTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSVnBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVWtkWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSV0Y0ZW5rMFdUaFBjVFpHUWtFelFuQklaVkZITlhFM2QzcEpOMmR2YTB0RFZtWkthV1pNVW1wS1QwMUdjM2hsWkRSb1IwSkhWblpRVWtSd2FrZ3lZazVHWWxnNENqbGFiR2QwWVV4MWRWTnpXRE5pYkdSRlJFRkxRbWRuY1docmFrOVFVVkZFUVdkT1NVRkVRa1pCYVVWQmJXSTROR2RoY0VZclZFbG9OalZ5Y3pKRE1sWnZNMFZxY0RjMlpFNHJWbFVLVDFsVVRFNWphWGhHYjFsRFNVUkdUMVpxWm1WVlVsTm1jSGx0YWxweU5VbDJkMDF0VEVaRldUSlNXVW8yVXpSRE1pOHpOekJTTkZZS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6ImVUY084VXlHbmY4aG1KYzk0azBQMVNpM2srR2loRWg0cUNuaUNBQm5BN2NUL2R0aW1nPT0iLCJleHAiOjQ4ODg5MTU4NTYsImlhdCI6MTczNTMxNTg1MywianRpIjoiZmUwYmQwMWMtYzY5MS00M2JlLWI0YjAtNTExNmUwYjcyYWQyIiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiM2MzODRjOGYtYmNjOC00YTBiLTllNjQtYTA4ZGMyOTJhZGM4In0.nscCiYqAb741oazMkuIxwLUlV2qmwIIESjeKqAAFBQyAZhhGnUAw0bgOem6WoUhrhiQ7zRjA-MLIrt9OyFhsqNXUGvjVsv89ldW-dUDsPN4p-Qxt5vK3NunDodUjRDP_Fhm9_D8Ddpc9je2jhC_BSyhck-2GhuWdNjMPBoOGyPkKZIskfmfDZOK1APkFxHjroOqnnjMBpk9d8izX1GU282xQq1GorvF6ZEfGh8PSUE4xGp9bi4Q-m9hn129ZN5G328yznWvQB3e7u2DfKWQHfLVGUZ3lUTh5DsInwZ_6Zvj9LOeObCFuEZIYaqhS4B5Vq4PT0lyd5CfJE08d0Ndxm2Ns7Nd8ESvIZuJJdYIc0LhoUT6NHJDrxpeVGInT4rm88pDKPKnZtE8b3th4wIcTuBsTbhr2u9QQXzMomoiXb78AKp9bMfwLfG0hj7bj_2lDdeRxMaz8xxmlFP-j1IWYg472brmNvKSsXM13IdSlV0PFHAPJ2LjDecBO16Avg8P-phXVS59CeawgZ8z7TM0DqXfqD1l1AcgbNm5Kj8qR_m3oh8Pz9vZnl68u3RfCLvuY9Xg6wmCrHJgH03AGNQnZvEugL45a-DrQTBVAUuHA4mGDTIOb-M-I3yn_HfAz9c2qoUPnHmwQEewsBkLvD6PeToeQm9E7EphI3Wqs3NLJIpw',
     'g_car_2763': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRFZFTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSVWsyYm14Mk9WQlpNV3B2YTJZdlpWRTFSMFZSZFUxcWQxWjZXWGxDUkN0SGRHWnlLMGRHTVc1dmEwZHJUV1ozYjNkcE5HVm9XalpUU2sxbGNFNHliM0p5VTAwM0NsWlVXbmxyU0doNU4xZFJOVGhsTVZwYVZFRkxRbWRuY1docmFrOVFVVkZFUVdkT1NFRkVRa1ZCYVVGRWEzSlllV0pJTldwdE5GQXlNM1ZNY1VsdVZuSlBTM0pEZDFodVREWXdNMUVLU0V0TGNtaG5XbHB6UVVsblRGVmlTMDlRUzNwRE1XdG1aRVJSVEU5WFJUSk5kM1Z0UzAwdmNrTndUV015ZEd4UFpGRTVZVkp0ZHowS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6ImpIbjRvZ3g5SXJRRDNHTzdMMXdBR1dtam9DUUVzZW92RW43OFcxdU00Y3c2Ujk4Uzl3PT0iLCJleHAiOjQ4ODg4MDYwMTEsImlhdCI6MTczNTIwNjAwOCwianRpIjoiNmNkNDQzYzktNWYxZS00Y2RlLWJjMWQtMzQ2MzVhOTM0NTYxIiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiNzIzZTk3MzYtMjgyMS00YTI2LTk3MjctMDM5MTZlNTVmM2VlIn0.DMhV67Rbce3mRVxl3KAH7ui0v5h1UZ3Evz-dmmRrdN-gkKoUv0GeSxULobj-E1nsxLYDabyV3YDFtKn8Y5Is2R3o7EPbrg4Xyu0K-bSAhneOqEtlCjDjx-4w_-etQvrEEeICW-paHi3Y7NuMeo8wCs-tYz00TjU3tukLhuDS_8MG-udjRh9-97qnzn67U64rS7MQIcCBNGs0kZU4yjNbU9_P5YGtOpN36dzIcQ0ntOhgI3cjHVPJcy7pmRRGZCIdvg6xBBYO8KtrBy5YoKmWx_7cabUoat-BkOlGGC4yP1PS7ZAcVhCBvQr3B9cNUMr7YPTsO2gT7hMAE3d49BnHFJjcz8BfBebeccTs0XojND148JRHBXnPUrifvfzdZxgvf9pBJixoLcDAHnLr-yRqAwvqjdZ4v9VjNI67EY75EZdAekyDWdMgIBPNlW08RcQS-yvEH4z6KXgkFxYTHPda9yvFNr9Z7n2tg1vpDS24VgMVlIT00Mqo5yu7-GFfLIdDerdbzBhLTfXTWwGijG-aRCWxCqEnvhuWolHSfttYsYOuUJ23BmcrBDguZdJf3_UH2Kj2FiySBSzR2TAsH8Ad1nJsvTQMsQPmCZwM9_qbOzK0GAzaAQdmj7CnwYMJJY3qZ4SiQqysGQqyCwrl5V0deBhi7fN2ScTGDE9GMdNwzyA',
-    'g_car_2714': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRFZFTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSWEpMTkRCR1drSk1NbTlZYW5GbWFEWlhjRWRKVTNGYU9WbEJSakJhVUhCc1pUQklaM293WW1sa1JYUnNia05VYUcwMVNuUTNaMGhWYjFadlJFeHJMM1ZtY0ZVNENtNTRRVFpxTXpCaFVHOTVNRWxIV1NzcmFrRkxRbWRuY1docmFrOVFVVkZFUVdkT1NFRkVRa1ZCYVVKUFRFVkViRk16VFcwelYwb3dSbWhNVTBGcVVGQmFkMkp3ZVRWc1duZFBRVWtLZUhSYVFWbHZNUzgzVVVsblRsRTVkbnBaYzI5T2MxTXlkSFpZTm5ORFdYY3hRMDFVUWk5UllWWnZTa3BEWjFSeloxcFZjM2hrUlQwS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6Imc0em42U09lY1EvL2hHQVh2aExTS2tXbDBRV3d3WU12bUE3dTFSV0g2ckU4a1RKVUxRPT0iLCJleHAiOjQ4NzM0OTQ3NDQsImlhdCI6MTcxOTg5NDc0MSwianRpIjoiMjYyMmY4MGUtN2FhYi00NTBhLWI2MGQtOGUxNDFkZDUwYzY3IiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiNDRhYzk5NmItNmYzNi00YzY0LTk3ZTEtMzM0NzQ0NGEzZDY5In0.lDCD3CcVDIO7dwp0ZlsdC6ejmLe57xriAUKd4B1OP90Sd74G9wVjGb-lfCIyJ9UX-PpM6Xt63DD45vtQn8HlPqbioJ3rhRQXCgr5w_4tOoAhYpRY0-q0mW0KVXVPKbDOMTdjsK_ZtU3lvVpe7KlfpCRXgsRxs_J6s8mBBluRI5R4Gu4xeKggsoxbbt8ZGiQ8ru1rfRGeZ_5a8FFRKwXXgXD83s3cEMatDbmePcvYiXoF9XS1YKsytnKWBTaNdFTttoDX2CVK1eFuOHGM7lRTeMweoHPsabrt5NLucFH6H60GOKvUtBTmDQFb1GV2jl7w0Ev4ciJSDs4-7kgkl2TENkGnnWA4euwBF-NOf9N9CnfzPNb9VqPsySqyfpcE1xxSE9fe-fun3u8suuDFtIb7qH7ajUj4fbUeJlpAGymtJvuYJ38PzlkHf9Etv23DLR6tVF5CzkcqK6hg0d6ZcJDn2qGlRZQtV1SVB1kEGQCDV9Ith10vpfbywsmvr9-CVUXor3P4-hlcnRcC6GpDsBUSmK6qxK1u-df8hHyAP8rW33dbxUN18t6CGqurkC3feD5fceX6VwdVj4uiJb9-ZNZ2CQmGbUUp7jCUniQcni3xA3jYBBgHCGe93aAPap8FzE3ucb56JUsEjjzAPpvAzkTF06EbtiSIbxPRJQTV1gxtLtg'
+    'g_car_2714': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRFZFTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSWEpMTkRCR1drSk1NbTlZYW5GbWFEWlhjRWRKVTNGYU9WbEJSakJhVUhCc1pUQklaM293WW1sa1JYUnNia05VYUcwMVNuUTNaMGhWYjFadlJFeHJMM1ZtY0ZVNENtNTRRVFpxTXpCaFVHOTVNRWxIV1NzcmFrRkxRbWRuY1docmFrOVFVVkZFUVdkT1NFRkVRa1ZCYVVKUFRFVkViRk16VFcwelYwb3dSbWhNVTBGcVVGQmFkMkp3ZVRWc1duZFBRVWtLZUhSYVFWbHZNUzgzVVVsblRsRTVkbnBaYzI5T2MxTXlkSFpZTm5ORFdYY3hRMDFVUWk5UllWWnZTa3BEWjFSeloxcFZjM2hrUlQwS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6Imc0em42U09lY1EvL2hHQVh2aExTS2tXbDBRV3d3WU12bUE3dTFSV0g2ckU4a1RKVUxRPT0iLCJleHAiOjQ4NzM0OTQ3NDQsImlhdCI6MTcxOTg5NDc0MSwianRpIjoiMjYyMmY4MGUtN2FhYi00NTBhLWI2MGQtOGUxNDFkZDUwYzY3IiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiNDRhYzk5NmItNmYzNi00YzY0LTk3ZTEtMzM0NzQ0NGEzZDY5In0.lDCD3CcVDIO7dwp0ZlsdC6ejmLe57xriAUKd4B1OP90Sd74G9wVjGb-lfCIyJ9UX-PpM6Xt63DD45vtQn8HlPqbioJ3rhRQXCgr5w_4tOoAhYpRY0-q0mW0KVXVPKbDOMTdjsK_ZtU3lvVpe7KlfpCRXgsRxs_J6s8mBBluRI5R4Gu4xeKggsoxbbt8ZGiQ8ru1rfRGeZ_5a8FFRKwXXgXD83s3cEMatDbmePcvYiXoF9XS1YKsytnKWBTaNdFTttoDX2CVK1eFuOHGM7lRTeMweoHPsabrt5NLucFH6H60GOKvUtBTmDQFb1GV2jl7w0Ev4ciJSDs4-7kgkl2TENkGnnWA4euwBF-NOf9N9CnfzPNb9VqPsySqyfpcE1xxSE9fe-fun3u8suuDFtIb7qH7ajUj4fbUeJlpAGymtJvuYJ38PzlkHf9Etv23DLR6tVF5CzkcqK6hg0d6ZcJDn2qGlRZQtV1SVB1kEGQCDV9Ith10vpfbywsmvr9-CVUXor3P4-hlcnRcC6GpDsBUSmK6qxK1u-df8hHyAP8rW33dbxUN18t6CGqurkC3feD5fceX6VwdVj4uiJb9-ZNZ2CQmGbUUp7jCUniQcni3xA3jYBBgHCGe93aAPap8FzE3ucb56JUsEjjzAPpvAzkTF06EbtiSIbxPRJQTV1gxtLtg',
+    'g_car_2736': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRGFrTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSVTlNVmtjd01scDJOM04wSzFkQldEaEtNMUJKTldSUE4zVTJlREJ5ZUdJeUwwRnVWRmgwYWl0UlpITm9PV2R1T1ZoSlEwMVhkR2xoTUZCd1dGUmtTbEZwVDAxUkNqRTNTWHB6TVdONGVXNDFjRlpNTlZBMWFrRkxRbWRuY1docmFrOVFVVkZFUVdkT1NVRkVRa1pCYVVFMU9XcEJjVVV6Y1VNNVRIZGhibUp4VHl0TGJpODRlVzVhVTNobGVUTjBaMjRLT0M5Wk5HdEpVMU5CVVVsb1FVNDROR3NyYVdacFNsVnZOamswVml0QmRscFRTREkxVEZSelVVeGhObkZGZHpaTk1VTnlaMXBwTkRRS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6ImRSVkppamJ3ZU43bjN2M0IvTVFLK1JSTnBaTVhGaVNUUVY0SFZ1RnJrRXExSXl0QzNBPT0iLCJleHAiOjQ4ODk2NTc2NDMsImlhdCI6MTczNjA1NzY0MCwianRpIjoiZTFiY2VjMjItY2MzNi00MTMyLWJlMTctZjEyNjk5ZTQ3MzZiIiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiYjBhODZjNDUtNjVlMy00ZTJlLTkxZWEtYTE1YTVhMmFkYTE5In0.cDBOzvVujQcFRw0x9Ape4LQCk27c3mFk3uW-7h7G8nZC98aHKPVaszbFtHWUm4IlDw4kfLwaH6lIIHIcd4yCto6-zpAZDOAMVILE2sb5MV3_UkWyRHDPGRGWgH-iYFRY9VWYTWTbtHA2RPtq-hLAOa7P9o74ihGdXDR1wNUEAIzXWNwrQubkNdcXMjnShhrRPLwAjuAOL2yE_YFBJXZj0VMXO0ZSxGWBCxhaXKBQKXjYkAG7G2wMCfbQtwt84UmlUUNhUe5aBGdmimte4e6vzDRoRrK_G8Tt1gQbPWngH68eZ5L2VnPISRvkDgaGfqRE8Yjjs1Ph4NzID5MYzswEFfaK6bGMmHMQ0cTi68MNIJhhtdgzqf7IVC0N1TUcekm49zc37egcZYo0zXm6xDQLalvLVR54i9Rf2FppXrr3O2O_w4KTgyxpn-d3z2Xqz0PFLw3aXyGRXlh9Wpm8lmsgj-hUEHLl_zie2kJXVpzqpY1RkPjDcYhRB0KXp2X73vEo82ip7F9tC526LTQY27QMCLBx329YmaAueH82nqsDo8IM5U7bptiiXroGwDbEvm7PNKJbho8cVQ4aHZKyLXfl8OjnPYY0BYXrl1-Wyf1O-yOC9vq1d4wAqrlyEqzA_5_WG_4ud9Imz5rW1dL1Xa_XU-CL9UygVn7dqz4cO2SrUfg'
 };
 const API_URL = 'https://p.grabtaxi.com/api/passenger/v2/poi/search';
 
@@ -34,25 +35,74 @@ const waitForValue = async (valueGetter, interval = 100) => {
         checkForValue();
     });
 };
-
+const DEFAULT_USER_AGENT = 'Grab/5.335.0 (Android 11; Build 91095616)';
 const Request = async (url, options = {}) => {
-    return new Promise((s, r) => {
-        let result;
-        let data = JSON.stringify({
-            url: url,
-            options: options
-        });
-        console.log('Sending request to: ' + url)
-        const exec = spawn('php', ['requestor.php', Buffer.from(data).toString('base64')]);
-        exec.stdout.on('data', (data) => {
-            result = data.toString();
-        });
-        exec.on('close', (code) => {
-            s(result);
-        });
-    })
-}
+    try {
+        console.log('Sending request to:', url);
+        let headers = {};
 
+        // Check if headers are passed as an array of strings
+        if (Array.isArray(options.headers)) {
+            // Convert the array of header strings into an object
+            headers = options.headers.reduce((acc, header) => {
+                // Split header string by ':', ensure it's key-value
+                const [key, value] = header.split(':').map((str) => str.trim());
+                if (key && value) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+        } else if (options.headers && typeof options.headers === 'object') {
+            // If headers are already an object, just use them
+            headers = { ...options.headers };
+        }
+
+        // Ensure the User-Agent is set globally
+        headers['User-Agent'] = DEFAULT_USER_AGENT;
+
+        // Merge headers with any other options provided
+        options.headers = {
+            ...headers,
+            ...(options.headers || {}),
+        };
+        let cleanedObj = Object.fromEntries(
+            Object.entries(options.headers).filter(([key, value]) => isNaN(key))
+        );
+        
+        const response = await axios({
+            url,
+            method: options.method || 'GET',
+            headers: cleanedObj,
+            data: options.postfields || null,
+            validateStatus: () => true, // This will allow all HTTP status codes
+        });
+        
+        // Automatically handle JSON or text
+        const contentType = response.headers['content-type'] || '';
+        if (contentType.includes('application/json')) {
+            return JSON.stringify(response.data); // Axios automatically parses JSON
+        } else {
+            return response.data.toString(); // Treat as plain text
+        }
+    } catch (error) {
+        console.error('Error making request:', error.message);
+        throw error;
+    }
+};
+
+/*(async () => {
+    result = await Request(data.url, {
+        method: data.data ? 'POST' : 'GET',
+        postfields: data.data ? data.data : '',
+        headers: [
+            data.data ? 'Content-Type: application/json; charset=UTF-8' : '',
+            'X-Mts-Ssid: ' + AUTH,
+            'Authorization: ' + AUTH,
+            'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
+        ],
+    });
+})();
+return*/
 app.get('/api/search', async (req, res) => {
     let AUTH = KEYS[req.query.key];
     try {
@@ -60,7 +110,7 @@ app.get('/api/search', async (req, res) => {
         console.log(`Constructed URL: ${url}`);
         
         const response = await Request(url, {
-            httpheader: [
+            headers: [
                 'X-Mts-Ssid: ' + AUTH,
                 'Authorization: ' + AUTH,
                 'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)'
@@ -84,8 +134,11 @@ io.on('connection', async (socket) => {
     let AUTH;
 
     socket.on('userData', async (data) => {
-        AUTH = KEYS[data]; // Set the AUTH value based on the input
-        socket.emit('message', 'Userdata set successfully');
+        if (KEYS[data]) {
+            socket.emit('keyValidation', { valid: true, message: 'Userdata set successfully' });
+        } else {
+            socket.emit('keyValidation', { valid: false, message: 'Invalid key. Please try again.' });
+        }
     });
     socket.on('action', async (data) => {
 
@@ -93,8 +146,9 @@ io.on('connection', async (socket) => {
         let result, AUTH = KEYS[data.key];
         if (data.data) {
             result = await Request(data.url, {
+                method: data.data ? 'POST' : 'GET',
                 postfields: data.data ? data.data : '',
-                httpheader: [
+                headers: [
                     data.data ? 'Content-Type: application/json; charset=UTF-8' : '',
                     'X-Mts-Ssid: ' + AUTH,
                     'Authorization: ' + AUTH,
@@ -106,7 +160,7 @@ io.on('connection', async (socket) => {
             }
         } else {
             result = await Request(data.url, {
-                httpheader: [
+                headers: [
                     'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
                     'X-Mts-Ssid: ' + AUTH,
                     'Authorization: ' + AUTH,
