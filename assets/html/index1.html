@@ -11,6 +11,21 @@
 <body>
     <div class="header"><h2>Grab Car</h2></div>
     <div class="container">
+        <div id="ongoingBooking" class="ongoing-booking" style="display: none;">
+            <div class="glowing-circle"></div>
+            <span>Booking Ongoing</span>
+            <button id="cancelBookingButton" class="button-cancel">Cancel Booking</button>
+        </div>
+        <div class="cancellation-modal" id="cancellationModal" style="display: none;">
+            <div class="modal-content">
+                <h3>Cancel Booking</h3>
+                <select id="cancellationReasons" class="cancellation-reasons">
+                    <option value="">Select a reason...</option>
+                </select>
+                <button id="closeModalButton" class="button-close-modal">Close</button>
+                <button id="finalCancelButton" class="button-final-cancel" disabled>Cancel</button>
+            </div>
+        </div>
         <input type="text" id="pickupSearchBar" class="search-bar" placeholder="Pickup location...">
         <input type="text" id="dropoffSearchBar" class="search-bar" placeholder="Drop-off location...">
         <div id="resultsContainer" class="resultsContainer"></div>

@@ -8,17 +8,84 @@
  * --------------------------------------------------
  */
 (function($) {
+    const socket = io();
     const $pickupInput = $('#pickupSearchBar');
     const $dropoffInput = $('#dropoffSearchBar');
     const $resultsContainer = $('#resultsContainer');
     const $confirmButton = $('#confirmButton');
     const $grabCarDetails = $('#grabCarDetails');
-    const socket = io();
+    const key = params('key');
     let pickupLocation = null;
     let dropoffLocation = null;
     let selectedCarIndex = null;
-    const key = params('key');
-    
+    let bookingOngoing = false;
+    const varHandler = (() => {
+        const variables = {};
+        return {
+            set: (key, value) => { variables[key] = value; },
+            get: (key) => variables[key]
+        };
+    })();
+    async function checkBookingStatus() {
+        const requestData = {
+            url: 'https://p.grabtaxi.com/api/passenger/v3/current'
+        };
+        if(!bookingOngoing) {
+            const activeRides = await requestor(requestData, 'activeRides');
+            var e = JSON.parse(activeRides.response);
+            const $ongoingBookingDiv = $('#ongoingBooking');
+            if (e.rides.active && e.rides.active.length > 0) {
+                bookingOngoing = true;
+                varHandler.set('bookingId', e.rides.active[0]);
+                $ongoingBookingDiv.css('display', 'flex');
+            } else {
+                $ongoingBookingDiv.css('display', 'none');
+            }
+        }
+        
+    }
+    function openCancellationModal() {
+        $('#cancellationModal').fadeIn();
+    }
+    function closeCancellationModal() {
+        $('#cancellationModal').fadeOut();
+    }
+    function handleReasonSelection() {
+        const selectedReasonId = $('#cancellationReasons').val();
+        if (selectedReasonId) {
+            $('#finalCancelButton').prop('disabled', false);
+        } else {
+            $('#finalCancelButton').prop('disabled', true);
+        }
+    }
+    function finalCancelBooking() {
+        const selectedReasonId = $('#cancellationReasons').val(); 
+        const bookingId = varHandler.get('bookingId');
+        $('#ongoingBooking').hide();
+        $('#cancellationModal').hide();
+        socket.emit('cancel', key, selectedReasonId, bookingId);
+    }
+    const cancelReasons = [
+        { id: 26, code: 'ADD_PROMOTION', title: 'Promo issues', type: 'static' },
+        { id: 25, code: 'CHANGE_PAYMENT', title: 'Payment method', type: 'static' },
+        { id: 5, code: 'DRIVER_ASKED_TO_CANCEL', title: 'Driver asked to cancel', type: 'static' }
+    ];
+    cancelReasons.forEach(reason => {
+        $('#cancellationReasons').append(
+            $('<option></option>').val(reason.id).text(reason.title)
+        );
+    });
+    $('#cancelBookingButton').on('click', openCancellationModal);
+    $('#closeModalButton').on('click', closeCancellationModal);
+    $('#cancellationReasons').on('change', handleReasonSelection);
+    $('#finalCancelButton').on('click', finalCancelBooking);
+    setInterval(checkBookingStatus, 2000);
+    socket.on('cancelStatus', async (message) => {
+        if(message.status == true) {
+            bookingOngoing = false;
+        }
+        alert(message.message);
+    });
     const fetchResults = async (keyword, type) => {
         if (!keyword) return $resultsContainer.empty();
         try {
@@ -58,7 +125,6 @@
         }
         $resultsContainer.empty();
     };
-
     const requestor = (data, requestType) => new Promise((resolve, reject) => {
         console.log(`Sending ${requestType} request with data:`, data);
         data.key = key;
@@ -72,16 +138,6 @@
         socket.once('actionResponse', handler);
         setTimeout(() => reject(new Error(`No response for ${requestType}`)), 5000);
     });
-
-    const varHandler = (() => {
-        const variables = {};
-
-        return {
-            set: (key, value) => { variables[key] = value; },
-            get: (key) => variables[key]
-        };
-    })();
-
     (async function init() {
         const url = 'https://p.grabtaxi.com/api/passenger/v4/loyalty/pax-state-info?latitude=14.546134135961552&longitude=121.19037125396864';
         const requestData = { url };
@@ -425,7 +481,7 @@
                             }, 'sharedLink');
                             const sss = JSON.parse(ss.response);
                             hs_icon('show', 'success');
-                            socket.emit('allocated', key, `https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=${carCode}`);
+                            socket.emit('allocated', key, sss.link);
                             $('#statusMessage').html(`
                                 <div class="success">
                                     <h3>Driver allocated. Your driver is on the way!</h3>
