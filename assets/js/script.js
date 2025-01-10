@@ -85,6 +85,7 @@
     $('#cancellationReasons').on('change', handleReasonSelection);
     $('#finalCancelButton').on('click', finalCancelBooking);
     setInterval(checkBookingStatus, 2000);
+    //checkBookingStatus();
     socket.on('cancelStatus', async (message) => {
         if(message.status == true) {
             bookingOngoing = false;
@@ -143,6 +144,7 @@
         socket.once('actionResponse', handler);
         setTimeout(() => reject(new Error(`No response for ${requestType}`)), 5000);
     });
+    
     (async function init() {
         const url = 'https://p.grabtaxi.com/api/passenger/v4/loyalty/pax-state-info?latitude=14.546134135961552&longitude=121.19037125396864';
         const requestData = { url };

@@ -93,7 +93,7 @@ const Request = async (url, options = {}) => {
 };
 /*(async() => {
     var qq = await Request (
-        'https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=A-7CDI7R3GWHHL',
+        'https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=A-7CE923NWWFQJ',
         {
             'header': 1,
             'headers': [
@@ -104,7 +104,7 @@ const Request = async (url, options = {}) => {
     );
     console.log(qq);
 })();
-return;*/
+return;/*/
 /*(async () => {
     result = await Request(data.url, {
         method: data.data ? 'POST' : 'GET',
@@ -187,7 +187,7 @@ io.on('connection', async (socket) => {
     });
     socket.on('cancel', async (key, id, bookId) => {
         let AUTH = KEYS[key];
-        console.log('cancellingg')
+        console.log('cancelling..')
         try {
             var cancelSure = await Request('https://api.grab.com/api/v3/public/validatePaxCancellation', {
                 method:'POST',
@@ -211,6 +211,7 @@ io.on('connection', async (socket) => {
                     'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
                 ],
             });
+            console.log(cancel)
             var j = JSON.parse(cancel);
             if (j.cancellationFeePayment && j.cancellationFeePayment.error === '') {
                 socket.emit('cancelStatus', {
