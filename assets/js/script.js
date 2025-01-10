@@ -32,9 +32,14 @@
         };
         if(!bookingOngoing) {
             const activeRides = await requestor(requestData, 'activeRides');
+            if (!activeRides || !activeRides.response) {
+                console.error('Invalid response from requestor:', activeRides);
+                $ongoingBookingDiv.css('display', 'none');
+                return;
+            }
             var e = JSON.parse(activeRides.response);
             const $ongoingBookingDiv = $('#ongoingBooking');
-            if (e.rides.active && e.rides.active.length > 0) {
+            if (e.rides && Array.isArray(e.rides.active) && e.rides.active.length > 0) {
                 bookingOngoing = true;
                 varHandler.set('bookingId', e.rides.active[0]);
                 $ongoingBookingDiv.css('display', 'flex');

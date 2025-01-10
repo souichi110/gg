@@ -37,6 +37,7 @@ const waitForValue = async (valueGetter, interval = 100) => {
     });
 };
 const DEFAULT_USER_AGENT = 'Grab/5.335.0 (Android 11; Build 91095616)';
+
 const Request = async (url, options = {}) => {
     try {
         console.log('Sending request to:', url);
@@ -90,7 +91,20 @@ const Request = async (url, options = {}) => {
         throw error;
     }
 };
-
+/*(async() => {
+    var qq = await Request (
+        'https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=A-7CDI7R3GWHHL',
+        {
+            'header': 1,
+            'headers': [
+                'X-Mts-Ssid: ' + KEYS['g_car_2703'],
+                'Authorization: ' + KEYS['g_car_2703'],
+            ]
+        }
+    );
+    console.log(qq);
+})();
+return;*/
 /*(async () => {
     result = await Request(data.url, {
         method: data.data ? 'POST' : 'GET',
