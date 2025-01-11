@@ -4,8 +4,7 @@ error_reporting(0);
 $glob_curl_headers = [
     'ssl_verifypeer' => 0,
     'ssl_verifyhost' => 0,
-    //'proxy' => 'pool.infatica.io:10476',
-    //'proxyuserpwd' => '6hWZ7CS4YfpyIQaPXqDc:RNW78Fm5'
+    'proxy' => 'http://country-worldwide:63ca19f9-b895-4439-95ee-92cfc91a30b1@proxy.proxyverse.io:9200'
 ];
 $glob_http_headers = [
     'User-Agent' => 'Grab/5.318.0 (Android 11; Build 80919676)'

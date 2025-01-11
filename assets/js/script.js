@@ -19,14 +19,91 @@
     let dropoffLocation = null;
     let selectedCarIndex = null;
     let bookingOngoing = false;
-    const varHandler = (() => {
+    let isFetching = false;
+    /*const varHandler = (() => {
         const variables = {};
         return {
             set: (key, value) => { variables[key] = value; },
             get: (key) => variables[key]
         };
+    })();*/
+    const handleSelection = (location, type) => {
+        const selectedLocation = {
+            id: location.id,
+            name: location.address.name,
+            combined_address: location.address.combined_address,
+            latlng: location.latlng
+        };
+        if (type === 'pickup') {
+            pickupLocation = selectedLocation;
+            $pickupInput.val(location.address.name);
+        } else if (type === 'dropoff') {
+            dropoffLocation = selectedLocation;
+            $dropoffInput.val(location.address.name);
+        }
+        $resultsContainer.empty();
+    };
+    const requestor = (data, requestType) => new Promise((resolve, reject) => {
+        //console.log(`Sending ${requestType} request with data:`, data);
+        const requestId = `${requestType}-${Date.now()}-${Math.random()}`;
+        data.requestId = requestId;
+        data.key = key;
+        socket.emit('action', data);
+        const handler = (responseData) => {
+            if (responseData.requestId === requestId) {
+                //console.log(`Received ${requestType} response:`, responseData);
+                resolve(responseData);
+                socket.off('actionResponse', handler);
+            }
+        };
+        socket.on('actionResponse', handler);
+        setTimeout(() => {
+            socket.off('actionResponse', handler);
+            reject(new Error(`No response for ${requestType}`));
+        }, 5000);
+    });
+    const varHandler = (() => {
+        const variables = new Map();
+        return {
+            set: (key, value) => {
+                variables.set(key, value);
+                console.log(`Variable set: ${key} =`, value);
+            },
+            get: (key) => {
+                if (!variables.has(key)) {
+                    console.warn(`Variable "${key}" does not exist.`);
+                    return null;
+                }
+                return variables.get(key);
+            },
+            delete: (key) => {
+                if (variables.has(key)) {
+                    variables.delete(key);
+                    console.log(`Variable "${key}" deleted.`);
+                } else {
+                    console.warn(`Attempted to delete non-existent variable "${key}".`);
+                }
+            },
+            clear: () => {
+                variables.clear();
+                console.log('All variables cleared.');
+            },
+        };
+    })();
+    (async function init() {
+        const url = 'https://p.grabtaxi.com/api/passenger/v4/loyalty/pax-state-info?latitude=14.546134135961552&longitude=121.19037125396864';
+        const requestData = { url };
+        try {
+            const response = await requestor(requestData, 'init');
+            const data = JSON.parse(response.response);
+            const partnerUID = data.flexibleRewardsConfigs[0].partnerUID;
+            varHandler.set('partnerUID', partnerUID);
+        } catch (error) {
+            console.error('Error fetching or processing data:', error);
+        }
     })();
     async function checkBookingStatus() {
+        isFetching = true;
         const requestData = {
             url: 'https://p.grabtaxi.com/api/passenger/v3/current'
         };
@@ -84,8 +161,8 @@
     $('#closeModalButton').on('click', closeCancellationModal);
     $('#cancellationReasons').on('change', handleReasonSelection);
     $('#finalCancelButton').on('click', finalCancelBooking);
-    setInterval(checkBookingStatus, 2000);
-    //checkBookingStatus();
+   // setInterval(checkBookingStatus, 2000);
+   checkBookingStatus();
     socket.on('cancelStatus', async (message) => {
         if(message.status == true) {
             bookingOngoing = false;
@@ -113,53 +190,14 @@
                 .on('click', () => handleSelection(location, type));
             $resultsContainer.append($locationDiv);
         });
-    };
-
-    const handleSelection = (location, type) => {
-        const selectedLocation = {
-            id: location.id,
-            name: location.address.name,
-            combined_address: location.address.combined_address,
-            latlng: location.latlng
-        };
-        if (type === 'pickup') {
-            pickupLocation = selectedLocation;
-            $pickupInput.val(location.address.name);
-        } else if (type === 'dropoff') {
-            dropoffLocation = selectedLocation;
-            $dropoffInput.val(location.address.name);
-        }
-        $resultsContainer.empty();
-    };
-    const requestor = (data, requestType) => new Promise((resolve, reject) => {
-        console.log(`Sending ${requestType} request with data:`, data);
-        data.key = key;
-        socket.emit('action', data);
-
-        const handler = (responseData) => {
-            console.log(`Received ${requestType} response:`, responseData);
-            resolve(responseData);
-        };
-
-        socket.once('actionResponse', handler);
-        setTimeout(() => reject(new Error(`No response for ${requestType}`)), 5000);
-    });
-    
-    (async function init() {
-        const url = 'https://p.grabtaxi.com/api/passenger/v4/loyalty/pax-state-info?latitude=14.546134135961552&longitude=121.19037125396864';
-        const requestData = { url };
-        try {
-            const response = await requestor(requestData, 'init');
-            const data = JSON.parse(response.response);
-            const partnerUID = data.flexibleRewardsConfigs[0].partnerUID;
-            console.log(partnerUID);
-            varHandler.set('partnerUID', partnerUID);
-        } catch (error) {
-            console.error('Error fetching or processing data:', error);
-        }
-    })();
+    };    
 
     const displayGrabCarDetails = (data) => {
+        
+        if (!data.categoryGroups || !Array.isArray(data.categoryGroups) || data.categoryGroups.length === 0) {
+            alert('Grab Car service Unavailable in your area');
+            return;
+        }
         const services = data.categoryGroups[0].groups[0].services;
         const grabCarList = $('#grabCarList').empty();
         grabCarList.append(
@@ -590,7 +628,7 @@
 
         try {
             const paymentMethodsResponse = await requestor(paymentData, 'paymentMethods');
-            console.log('Payment methods response:', paymentMethodsResponse);
+            //console.log('Payment methods response:', paymentMethodsResponse);
             const paymentMethods = JSON.parse(paymentMethodsResponse.response);
             await FO(paymentMethods.sections[0].items[0].meta.paymentTypeID);
             displayPaymentMethods(paymentMethods);

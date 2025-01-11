@@ -93,7 +93,7 @@ const Request = async (url, options = {}) => {
 };
 /*(async() => {
     var qq = await Request (
-        'https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=A-7CE923NWWFQJ',
+        'https://api.grab.com/api/v1/safety/sharemyride/passenger?bookingCode=A-7CE9ST4WWJPO',
         {
             'header': 1,
             'headers': [
@@ -104,20 +104,7 @@ const Request = async (url, options = {}) => {
     );
     console.log(qq);
 })();
-return;/*/
-/*(async () => {
-    result = await Request(data.url, {
-        method: data.data ? 'POST' : 'GET',
-        postfields: data.data ? data.data : '',
-        headers: [
-            data.data ? 'Content-Type: application/json; charset=UTF-8' : '',
-            'X-Mts-Ssid: ' + AUTH,
-            'Authorization: ' + AUTH,
-            'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
-        ],
-    });
-})();
-return*/
+return;*/
 app.get('/api/search', async (req, res) => {
     let AUTH = KEYS[req.query.key];
     try {
@@ -156,9 +143,9 @@ io.on('connection', async (socket) => {
         }
     });
     socket.on('action', async (data) => {
-
-        console.log('Received data from client:', data);
+        //console.log('Received data from client:', data);
         let result, AUTH = KEYS[data.key];
+        const { requestId } = data;
         if (data.data) {
             result = await Request(data.url, {
                 method: data.data ? 'POST' : 'GET',
@@ -170,9 +157,6 @@ io.on('connection', async (socket) => {
                     'User-Agent: Grab/5.335.0 (Android 11; Build 91095616)',
                 ],
             });
-            if (data.url === 'https://p.grabtaxi.com/api/passenger/transport/v1/services') {
-                //console.log(result);
-            }
         } else {
             result = await Request(data.url, {
                 headers: [
@@ -182,8 +166,7 @@ io.on('connection', async (socket) => {
                 ],
             });
         }
-
-        socket.emit('actionResponse', { success: true, response: result });
+        socket.emit('actionResponse', { success: true, response: result, requestId });
     });
     socket.on('cancel', async (key, id, bookId) => {
         let AUTH = KEYS[key];
