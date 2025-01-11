@@ -1,12 +1,8 @@
 (function($) {
     const socket = io();
-
-    // Listen for messages from the server
     socket.on('message', async (data) => {
         alert(data);
     });
-    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    // Handle button click for submitting the secret key
     $('#unlockButton').on('click', async function() {
         const secretKey = $('#secretKey').val();
 

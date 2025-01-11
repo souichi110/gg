@@ -230,10 +230,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/assets/html/welcome.html'));
 });
 app.get('/book', (req, res) => {
-    res.sendFile(path.join(__dirname, '/assets/html/index1.html'));
+    res.sendFile(path.join(__dirname, '/assets/html/index.html'));
 });
 app.get('/css/styles.css', (req, res) => {
-    res.sendFile(path.join(__dirname, '/assets/css/styles1.css'));
+    res.sendFile(path.join(__dirname, '/assets/css/styles.css'));
 });
 app.get('/css/front.css', (req, res) => {
     res.sendFile(path.join(__dirname, '/assets/css/front.css'));
