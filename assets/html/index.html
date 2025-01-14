@@ -42,9 +42,15 @@
             <button class="button-c">Book Grab Car</button>
         </div>
         <div id="allocationStatus" class="allocation-status" style="display:none;">
-            <div id="loadingIndicator" class="loading-indicator"></div>
-            <div id="errorIcon" class="error-icon" style="display:none;"><span class="cross">✖</span></div>
-            <div id="successIcon" class="success-icon" style="display:none;"><span class="check">✔</span></div>
+            <div class="icon-container">
+                <div id="loadingIndicator" class="loading-indicator"></div>
+                <div id="errorIcon" class="status-icon error-icon" style="display:none;">
+                    <span class="icon">✖</span>
+                </div>
+                <div id="successIcon" class="status-icon success-icon" style="display:none;">
+                    <span class="icon">✔</span>
+                </div>
+            </div>
             <div id="statusMessage" class="status-message"></div>
         </div>
     </div>
