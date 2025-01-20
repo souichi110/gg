@@ -11,6 +11,8 @@ const io = socketIO(server);
 const PORT = 8000;
 let genKeys = {};
 //g_car_2714
+//https://p.grabtaxi.com/api/passenger/v3/rides/A-7DEAAWAGWG7M?screenName=RestoreRide
+//https://p.grabtaxi.com/api/passenger/v3/profile
 const KEYS = {
     'g_car_2788': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRFZFTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSVmcxS3pKV09UbGpSVmRrV0d0eGVqSk9RWEJ5V0VWdE9IWmlWMFl4VjJ3NU9XVm5TbTFLTXpaRll6UjFXR3RIWVRoSFR6SXhURWRWT1dkR1RHWTFRbTAwYlZaWkNuSmFiSE5rV25oaVJrOVpWVkZIUVhSRGFrRkxRbWRuY1docmFrOVFVVkZFUVdkT1NFRkVRa1ZCYVVKNVdGTk9OVWRPTVhaelNsYzRZbVo2UzNaYWVqWlJWMG9yZGs1Q2RUSktUelVLUjFSdlNYSldOVWg1ZDBsblZXUkZWMnhGYUdRcllqbE1UVVZFYjA1VWNqaE9aa1ZXVkhkQlNGQkxhRXRRUkdoNGNYZGhWWGczZHowS0xTMHRMUzFGVGtRZ1EwVlNWRWxHU1VOQlZFVXRMUzB0TFE9PSIsImVzaSI6IlBBL1dibVB3akg2YkpPTElwNzhXSnBxK2t3cWlWdStSb2F6N0JMZWh1Y09iZ0ttV2p3PT0iLCJleHAiOjQ4ODg5MDI0MzIsImlhdCI6MTczNTMwMjQyOSwianRpIjoiOTNkYTEyZWUtMWJkNy00OTZjLWFlMmUtN2QwYWEzZmFmMGJmIiwibG1lIjoiUEhPTkVOVU1CRVIiLCJuYW1lIjoiIiwic3ViIjoiYWYyYzdkM2UtYjJiNS00OGM0LWJkNWYtMmE4MGE1MmJlOWQwIn0.ayAFPPa7yP1mgNNuwuQ-yE2joCpvNAfEZq0J5SlV16YpwYdVUHzxQ8Pgmo-7TnxVb4l0QrpsUhU4zu4fSzQi9Qn23emu5RbbjhrozRuXTvBDF7Nqg98vfNBCBvhvbsbA2MbJ4wrinh0Muec9cjXFraySgvPKOH2Q5p7mxhVBJT6LHOq_fd1OEwOGoXSz9utcoaSEmkJTyFpuUFyBcseSEWqHl_gyv2IKFsTgACinVcOBs7h2scJzPSFxnPw1U6CMXwFj5tIwGtkY-2gmgWU2sYhYMlUaOUI1D46VrficaryHaq1UV03OYrS4XbxKW-HtABs9qawQF0tU01Hs6DS7p0hu_V_eXWXm9_gICb20qUQvZi_4wSxmR2QSeTtqyxCpS9lBGaawIBOchAvlSMOX40H9wKF2eyUryZp7fswTYO35P9Tet4nRCBoWHDNN-HZnbctoz-UrjPIFYPB-Y35a3QSvK3hpgv0OF--XEOXGchFsS7GBk3ykUt-jGiD60YKjPqOl3K0N1v4AxYl4YOtQ96eCy_3K3Pyp23D9lhk289112rHu3pGKpgT1YDHzzCoGoMtIbtX9eeA3MXJ9TF0GTHSVXpE-zbDHVJUks41UvJPvZLJ45I1z8cc_Zp2jF9j2S-WyvX1-8UQzx4d1D87tyQeDbSQhBaCerMfN5SSThZY',
     'g_car_2700': 'eyJhbGciOiJSUzI1NiIsImtpZCI6Il9kZWZhdWx0IiwidHlwIjoiSldUIn0.eyJhdWQiOiJQQVNTRU5HRVIiLCJjbmYiOiJMUzB0TFMxQ1JVZEpUaUJEUlZKVVNVWkpRMEZVUlMwdExTMHRDazFKU1VKRGVrTkNjMkZCUkVGblJVTkJaMFZDVFVGdlIwTkRjVWRUVFRRNVFrRk5RMDFCT0hoRVZFRk1RbWRPVmtKQlRWUkNSMXBvWVRKVmQwaG9ZMDVPZWtGM1RWUkJlRTFFUVhjS1RVUkJkMWRvWTA1T1JHZDNUVlJCZUUxRVFYZE5SRUYzVjJwQlVFMVJNSGREZDFsRVZsRlJSRVYzVW0xWlYzUnNUVVpyZDBWM1dVaExiMXBKZW1vd1EwRlJXVWxMYjFwSmVtb3dSQXBCVVdORVVXZEJSVTVuWnpZMmRIWjJPRmMyTHpsRFVXNDNjSEpUYjIxMWQzZ3dkM2MzUW1ZM2NHZEVPV1p6YkZWa05sZFRWVXRVV0VaeGREUkxSa3cwYlVsRlptaE9jSE5yUmxGT0NrSnljR3BwY3pGaGFuTk9iVlY2TTBabVJFRkxRbWRuY1docmFrOVFVVkZFUVdkT1NrRkVRa2RCYVVWQmJsSXZhVk16TTNjM1prMUZaMHg2Y2xJeFZGVkZXRTlhZEROcFVVVnhhV3NLYVU0emEyNUphMFpOTUdkRFNWRkRTVWxCWkVwSGVFY3hObHBQY2pkSWFtZGxRWFJXUkdabVEzUmxVbWhoVmxCRVJtZEZiVnBFYlhKc1p6MDlDaTB0TFMwdFJVNUVJRU5GVWxSSlJrbERRVlJGTFMwdExTMD0iLCJlc2kiOiIyUzJtc01tZDdMNnV2dW43MXBlSVJzRmYxWWh6U1dxMG52T3Y3NmpxQlpoaTFMVFlJZz09IiwiZXhwIjo0ODg5NTc5MTEzLCJpYXQiOjE3MzU5NzkxMTAsImp0aSI6ImQ5YjUxZDRjLWI3ZWItNDIyNC1iZTE4LTUyYzk4Y2NlZjA5YSIsImxtZSI6IlBIT05FTlVNQkVSIiwibmFtZSI6IiIsInN1YiI6ImQ5Yjk5NTYwLTA1OTQtNGE5My04MmRkLWE2MzQ1NmM0NWM4NyJ9.IoV_b0KbN4pbSwrqgbqLbaUdO2MGzsfh8OXx6eCrXI1OusIsZYUKFPGbpyxqRi3BnbzIy-4pQ8eWSHXyMRoUjB59wzB0Hv0T32KvzoKIqM4xz5wvgc2LGXAXzNVXCWTH43MkEobVnRDrlzVDuZBSZORX3JKh3qs0RP1YqDpHmQ5s2nBOGAKNdWJ6oUWCroocPWuEkqkWRglEeGVphdWQenhP6y89MZCHdAL-kvf-t1nIOiQ1K5Jy5CP13K_9Yaqo3SdPVNW-qayKqhbP92mnkyWW-0JtMUpNCk5SiVTeh-6Ekeq8u1TxCQ-7s5e6DMiOPU65Baw5roEkxWwDuqY5m2zAcGvLKfSEYfKl1eTaCOXCMKgTdOOMEaD5rkEb4XGRuGFPBtqFHUeBLODicVy-5t5R1XJ2cbce5l1VHx0B8L-iXuOzQb1Kz_SzU7r3qWkf64Pt2wh9eUlyvht53smJUknsnhvjTrPO5-jbglUUF1yEpMgEHcyDoT805G1TUa6c5m1htYcZEXMSF4KrBZJV-HL9zdzYgTSdumHVz4PxmPSlD3et23p1-rpbZ0QLsJCbOrFo8Lj068VvByr9kEeJAL5FwD4wN9tzupUkFWhHCmOAV8VxCk5SrNKkB004o_0XG5_fYyyVt2ytnducDJ6ahsxFvYNb08o8cged87cFxv8',
@@ -237,7 +239,7 @@ io.on('connection', async (socket) => {
         }
     });
     socket.on('allocated', async (key, link, price) => {
-        const message = `*🚖 Grab Car Allocated!*\n\n*Price:* ${price}\n*Username:* @${genKeys[key]['user']}\n*🔑 Key:* ${key}\n*🔗 Link:* [Click here](${link})`;
+        const message = `*🚖 Grab Car Allocated!*\n\n*Price:* ${price}\n*Username:* @${genKeys[key]['user']} | ${genKeys[key]['fullname']}\n*🔑 Key:* ${key}\n*🔗 Link:* [Click here](${link})`;
         try {
             await fetch(`https://api.telegram.org/bot5427962497:AAFQAlN3TMpCJEIJ-IEvwgaCx8J-UJV3YkE/sendMessage?chat_id=-1002288680130&text=${encodeURIComponent(message)}&parse_mode=Markdown`);
         } catch {
@@ -260,6 +262,7 @@ const cleanExpiredKeys = () => {
 setInterval(cleanExpiredKeys, 60 * 1000);
 app.get('/generateKey', (req, res) => {
     const keyName = req.query.keyName;
+    const fullname = req.query.fname;
     if (!keyName) {
         return res.status(400).send({ error: 'Key name is required' });
     }
@@ -267,6 +270,7 @@ app.get('/generateKey', (req, res) => {
     const authKeys = Object.keys(KEYS);
     const assignedAuth = KEYS[authKeys[Math.floor(Math.random() * authKeys.length)]];
     genKeys[keyName + '_' + tempKey] = {
+        fullname: fullname,
         user: keyName,
         key: tempKey,
         auth: assignedAuth,
