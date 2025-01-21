@@ -307,3 +307,6 @@ ul, li { list-style: none; padding: 0; margin: 0; }
         transform: translateY(0);
     }
 }
+.checkbox {
+    pointer-events: none;
+}
